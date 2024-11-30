@@ -34,10 +34,14 @@ const Sidebar: React.FC = () => {
 
   // Handle logout action
   const handleLogout = () => {
-    // Clear localStorage or sessionStorage to log out
-    localStorage.clear(); // Adjust based on your storage method
-    window.location.reload(); // Reload the page after logout
-    setOpenLogoutModal(false); // Close the modal after confirming logout
+    // Clear localStorage or any other storage mechanism in use
+    localStorage.clear(); // or sessionStorage.clear() if using session storage
+    
+    // Close the logout modal
+    setOpenLogoutModal(false); 
+    
+    // Redirect to the root after clearing storage
+    window.location.href = '/'; 
   };
 
   return (
