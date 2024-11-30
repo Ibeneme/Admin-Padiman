@@ -7,16 +7,15 @@ import {
 } from "react-router-dom";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { Provider } from "react-redux";
+
 import LoginPage from "./Pages/Auth/LoginPage";
 import ForgotPassword from "./Pages/Auth/ForgotPassword";
 import OTPPage from "./Pages/Auth/OTPPage";
 import ResetPassword from "./Pages/Auth/ResetPassword";
 import SuccessPage from "./Pages/Auth/SuccessPage";
-import store from "./Redux/Store";
 import Dashboard from "./Pages/Dashboard/Dashboard";
 import Settings from "./Pages/Dashboard/Settings";
 import Layout from "./Pages/Dashboard/Layout";
-import { UserProvider } from "./Context/UserContext";
 import Users from "./Pages/Dashboard/Users";
 import DeliverParcel from "./Pages/Dashboard/DeliverParcel";
 import OfferRide from "./Pages/Dashboard/OfferRide";
@@ -29,11 +28,13 @@ import AdminEarnings from "./Pages/Dashboard/AdminEarnings";
 import RefferralEarnings from "./Pages/Dashboard/ReferralEarnings";
 import DriverRequests from "./Pages/Dashboard/DriverRequests";
 
+import store from "./Redux/Store";
+import { UserProvider } from "./Context/UserContext";
+
 const theme = createTheme({
   typography: {
     fontFamily: "'DM Sans', sans-serif",
   },
-
   palette: {
     primary: {
       main: "#8C08F0",
@@ -41,44 +42,72 @@ const theme = createTheme({
   },
 });
 
-const App: React.FC = () => {
-  // Check if there's an access token in localStorage
-  const isAuthenticated = Boolean(localStorage.getItem("accessToken"));
+// Utility function to check authentication
+const isAuthenticated = Boolean(localStorage.getItem("accessToken"));
 
+// PrivateRoute Component
+const PrivateRoute = ({ children }: any) => {
+  return isAuthenticated ? children : <Navigate to="/" />;
+};
+
+const App: React.FC = () => {
   return (
     <UserProvider>
       <Provider store={store}>
         <ThemeProvider theme={theme}>
           <Router>
             <Routes>
-              {/* Conditional Route rendering */}
+              {/* Public Routes */}
               <Route
                 path="/"
                 element={
                   isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />
                 }
               />
-
-              {/* Protect routes that require authentication */}
               <Route
                 path="/forgot-password"
-                element={!isAuthenticated ? <ForgotPassword /> : <Dashboard />}
+                element={
+                  !isAuthenticated ? (
+                    <ForgotPassword />
+                  ) : (
+                    <Navigate to="/dashboard" />
+                  )
+                }
               />
               <Route
                 path="/otp"
-                element={!isAuthenticated ? <OTPPage /> : <Dashboard />}
+                element={
+                  !isAuthenticated ? <OTPPage /> : <Navigate to="/dashboard" />
+                }
               />
               <Route
                 path="/reset-password"
-                element={!isAuthenticated ? <ResetPassword /> : <Dashboard />}
+                element={
+                  !isAuthenticated ? (
+                    <ResetPassword />
+                  ) : (
+                    <Navigate to="/dashboard" />
+                  )
+                }
               />
               <Route
                 path="/success"
-                element={!isAuthenticated ? <SuccessPage /> : <Dashboard />}
+                element={
+                  !isAuthenticated ? (
+                    <SuccessPage />
+                  ) : (
+                    <Navigate to="/dashboard" />
+                  )
+                }
               />
 
+              {/* Protected Routes */}
               <Route
-                element={isAuthenticated ? <Layout /> : <Navigate to="/" />}
+                element={
+                  <PrivateRoute>
+                    <Layout />
+                  </PrivateRoute>
+                }
               >
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/users" element={<Users />} />
