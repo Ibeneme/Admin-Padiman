@@ -30,6 +30,7 @@ import DriverRequests from "./Pages/Dashboard/DriverRequests";
 
 import store from "./Redux/Store";
 import { UserProvider } from "./Context/UserContext";
+import BecomeADriver from "./Redux/BecomeDriver/BecomeADriver";
 
 const theme = createTheme({
   typography: {
@@ -64,6 +65,9 @@ const App: React.FC = () => {
                   isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />
                 }
               />
+
+              <Route path="/become-driver" element={<BecomeADriver />} />
+
               <Route
                 path="/forgot-password"
                 element={

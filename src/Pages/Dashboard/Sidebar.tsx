@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ListItemButton,
   ListItemIcon,
@@ -21,28 +21,44 @@ import {
   PostAdd,
   CreditCard,
 } from "@mui/icons-material"; // Import CarRental for rides
-import { Link, useLocation } from "react-router-dom"; // Import useLocation to track current route
+import { Link, useLocation, useNavigate } from "react-router-dom"; // Import useLocation to track current route
+
+type User = {
+  id?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  superAdmin?: boolean;
+};
 
 const Sidebar: React.FC = () => {
   const theme = useTheme();
-  const location = useLocation(); // Get the current location
+  const location = useLocation();
+  const navigate = useNavigate(); // For redirection
+  const [openLogoutModal, setOpenLogoutModal] = useState(false);
+  const [user, setUser] = useState<User | null>(null); // Correct type and initialization
 
-  const [openLogoutModal, setOpenLogoutModal] = useState(false); // State for modal visibility
-
-  // Function to check if the current link is active
   const isActive = (path: string) => location.pathname === path;
 
-  // Handle logout action
   const handleLogout = () => {
-    // Clear localStorage or any other storage mechanism in use
-    localStorage.clear(); // or sessionStorage.clear() if using session storage
-    
-    // Close the logout modal
-    setOpenLogoutModal(false); 
-    
-    // Redirect to the root after clearing storage
-    window.location.href = '/'; 
+    localStorage.clear();
+    setUser(null); // Reset user state
+    setOpenLogoutModal(false);
+    navigate("/"); // Redirect
   };
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        const parsedUser: User = JSON.parse(storedUser);
+        setUser(parsedUser);
+        console.log("User object from localStorage:", parsedUser);
+      } catch (error) {
+        console.error("Failed to parse user data from localStorage:", error);
+      }
+    }
+  }, []);
 
   return (
     <List>
@@ -78,33 +94,37 @@ const Sidebar: React.FC = () => {
         <ListItemText primary="Dashboard" />
       </ListItemButton>
       {/* Users Item */}
-      <ListItemButton
-        component={Link}
-        to="/users"
-        sx={{
-          backgroundColor: isActive("/users")
-            ? theme.palette.primary.main + "1A"
-            : "transparent",
-          color: isActive("/users") ? theme.palette.primary.main : "inherit",
-          "&:hover": {
+
+      {user?.superAdmin && (
+        <ListItemButton
+          component={Link}
+          to="/users"
+          sx={{
             backgroundColor: isActive("/users")
               ? theme.palette.primary.main + "1A"
               : "transparent",
-          },
-        }}
-      >
-        <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
-          <Person
-            sx={{
-              fontSize: 20,
-              color: isActive("/users")
-                ? theme.palette.primary.main
-                : "inherit",
-            }}
-          />
-        </ListItemIcon>
-        <ListItemText primary="Users" />
-      </ListItemButton>
+            color: isActive("/users") ? theme.palette.primary.main : "inherit",
+            "&:hover": {
+              backgroundColor: isActive("/users")
+                ? theme.palette.primary.main + "1A"
+                : "transparent",
+            },
+          }}
+        >
+          <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
+            <Person
+              sx={{
+                fontSize: 20,
+                color: isActive("/users")
+                  ? theme.palette.primary.main
+                  : "inherit",
+              }}
+            />
+          </ListItemIcon>
+          <ListItemText primary="Users" />
+        </ListItemButton>
+      )}
+
       {/* Deliver Parcel Item */}
       <ListItemButton
         component={Link}
@@ -253,152 +273,158 @@ const Sidebar: React.FC = () => {
         </ListItemIcon>
         <ListItemText primary="Posts" />
       </ListItemButton>
-      <ListItemButton
-        component={Link}
-        to="/admins"
-        sx={{
-          backgroundColor: isActive("/admins")
-            ? theme.palette.primary.main + "1A"
-            : "transparent",
-          color: isActive("/admins") ? theme.palette.primary.main : "inherit",
-          "&:hover": {
-            backgroundColor: isActive("/admins")
-              ? theme.palette.primary.main + "1A"
-              : "transparent",
-          },
-        }}
-      >
-        <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
-          <Settings
+
+      {user?.superAdmin && (
+        <>
+          <ListItemButton
+            component={Link}
+            to="/admins"
             sx={{
-              fontSize: 20,
+              backgroundColor: isActive("/admins")
+                ? theme.palette.primary.main + "1A"
+                : "transparent",
               color: isActive("/admins")
                 ? theme.palette.primary.main
                 : "inherit",
+              "&:hover": {
+                backgroundColor: isActive("/admins")
+                  ? theme.palette.primary.main + "1A"
+                  : "transparent",
+              },
             }}
-          />
-        </ListItemIcon>
-        <ListItemText primary="Admins" />
-      </ListItemButton>
+          >
+            <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
+              <Settings
+                sx={{
+                  fontSize: 20,
+                  color: isActive("/admins")
+                    ? theme.palette.primary.main
+                    : "inherit",
+                }}
+              />
+            </ListItemIcon>
+            <ListItemText primary="Admins" />
+          </ListItemButton>
 
-      <ListItemButton
-        component={Link}
-        to="/request-withdrawals"
-        sx={{
-          backgroundColor: isActive("/request-withdrawals")
-            ? theme.palette.primary.main + "1A"
-            : "transparent",
-          color: isActive("/request-withdrawals")
-            ? theme.palette.primary.main
-            : "inherit",
-          "&:hover": {
-            backgroundColor: isActive("/request-withdrawals")
-              ? theme.palette.primary.main + "1A"
-              : "transparent",
-          },
-        }}
-      >
-        <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
-          <CreditCard
+          <ListItemButton
+            component={Link}
+            to="/request-withdrawals"
             sx={{
-              fontSize: 20,
+              backgroundColor: isActive("/request-withdrawals")
+                ? theme.palette.primary.main + "1A"
+                : "transparent",
               color: isActive("/request-withdrawals")
                 ? theme.palette.primary.main
                 : "inherit",
+              "&:hover": {
+                backgroundColor: isActive("/request-withdrawals")
+                  ? theme.palette.primary.main + "1A"
+                  : "transparent",
+              },
             }}
-          />
-        </ListItemIcon>
-        <ListItemText primary="Withdrawal Requests" />
-      </ListItemButton>
-      <ListItemButton
-        component={Link}
-        to="/admin-earnings"
-        sx={{
-          backgroundColor: isActive("/admin-earnings")
-            ? theme.palette.primary.main + "1A"
-            : "transparent",
-          color: isActive("/admin-earnings")
-            ? theme.palette.primary.main
-            : "inherit",
-          "&:hover": {
-            backgroundColor: isActive("/admin-earnings")
-              ? theme.palette.primary.main + "1A"
-              : "transparent",
-          },
-        }}
-      >
-        <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
-          <CreditCard
+          >
+            <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
+              <CreditCard
+                sx={{
+                  fontSize: 20,
+                  color: isActive("/request-withdrawals")
+                    ? theme.palette.primary.main
+                    : "inherit",
+                }}
+              />
+            </ListItemIcon>
+            <ListItemText primary="Withdrawal Requests" />
+          </ListItemButton>
+          <ListItemButton
+            component={Link}
+            to="/admin-earnings"
             sx={{
-              fontSize: 20,
+              backgroundColor: isActive("/admin-earnings")
+                ? theme.palette.primary.main + "1A"
+                : "transparent",
               color: isActive("/admin-earnings")
                 ? theme.palette.primary.main
                 : "inherit",
+              "&:hover": {
+                backgroundColor: isActive("/admin-earnings")
+                  ? theme.palette.primary.main + "1A"
+                  : "transparent",
+              },
             }}
-          />
-        </ListItemIcon>
-        <ListItemText primary="Padiman Route Earnings" />
-      </ListItemButton>
-      <ListItemButton
-        component={Link}
-        to="/drivers-requests"
-        sx={{
-          backgroundColor: isActive("/drivers-requests")
-            ? theme.palette.primary.main + "1A"
-            : "transparent",
-          color: isActive("/drivers-requests")
-            ? theme.palette.primary.main
-            : "inherit",
-          "&:hover": {
-            backgroundColor: isActive("/drivers-requests")
-              ? theme.palette.primary.main + "1A"
-              : "transparent",
-          },
-        }}
-      >
-        <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
-          <LocalShipping
+          >
+            <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
+              <CreditCard
+                sx={{
+                  fontSize: 20,
+                  color: isActive("/admin-earnings")
+                    ? theme.palette.primary.main
+                    : "inherit",
+                }}
+              />
+            </ListItemIcon>
+            <ListItemText primary="Padiman Route Earnings" />
+          </ListItemButton>
+          <ListItemButton
+            component={Link}
+            to="/drivers-requests"
             sx={{
-              fontSize: 20,
+              backgroundColor: isActive("/drivers-requests")
+                ? theme.palette.primary.main + "1A"
+                : "transparent",
               color: isActive("/drivers-requests")
                 ? theme.palette.primary.main
                 : "inherit",
+              "&:hover": {
+                backgroundColor: isActive("/drivers-requests")
+                  ? theme.palette.primary.main + "1A"
+                  : "transparent",
+              },
             }}
-          />
-        </ListItemIcon>
-        <ListItemText primary="Drivers Requests" />
-      </ListItemButton>
+          >
+            <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
+              <LocalShipping
+                sx={{
+                  fontSize: 20,
+                  color: isActive("/drivers-requests")
+                    ? theme.palette.primary.main
+                    : "inherit",
+                }}
+              />
+            </ListItemIcon>
+            <ListItemText primary="Drivers Requests" />
+          </ListItemButton>
 
-      <ListItemButton
-        component={Link}
-        to="/ref-earnings"
-        sx={{
-          backgroundColor: isActive("/ref-earnings")
-            ? theme.palette.primary.main + "1A"
-            : "transparent",
-          color: isActive("/ref-earnings")
-            ? theme.palette.primary.main
-            : "inherit",
-          "&:hover": {
-            backgroundColor: isActive("/ref-earnings")
-              ? theme.palette.primary.main + "1A"
-              : "transparent",
-          },
-        }}
-      >
-        <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
-          <LocalShipping
+          <ListItemButton
+            component={Link}
+            to="/ref-earnings"
             sx={{
-              fontSize: 20,
+              backgroundColor: isActive("/ref-earnings")
+                ? theme.palette.primary.main + "1A"
+                : "transparent",
               color: isActive("/ref-earnings")
                 ? theme.palette.primary.main
                 : "inherit",
+              "&:hover": {
+                backgroundColor: isActive("/ref-earnings")
+                  ? theme.palette.primary.main + "1A"
+                  : "transparent",
+              },
             }}
-          />
-        </ListItemIcon>
-        <ListItemText primary="Referral Earnings" />
-      </ListItemButton>
-
+          >
+            <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
+              <LocalShipping
+                sx={{
+                  fontSize: 20,
+                  color: isActive("/ref-earnings")
+                    ? theme.palette.primary.main
+                    : "inherit",
+                }}
+              />
+            </ListItemIcon>
+            <ListItemText primary="Referral Earnings" />
+          </ListItemButton>
+        </>
+      )}
       {/* Logout Item */}
       <ListItemButton
         onClick={() => setOpenLogoutModal(true)} // Open the modal when logout is clicked
