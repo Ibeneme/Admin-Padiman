@@ -11,6 +11,7 @@ import {
   Modal,
   Box,
   TextField,
+  Switch,
 } from "@mui/material";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -19,6 +20,7 @@ import {
   createAdmin,
   deleteAdmin,
   DeleteAdminParams,
+  updateAdminRights,
 } from "../../Redux/Dashboard/Dashboard";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../Redux/Store";
@@ -33,6 +35,11 @@ interface Admin {
   password: string;
   superAdmin: boolean;
   markedForDelete: boolean;
+  rights: {
+    viewUsers: boolean;
+    editUsers: boolean;
+    deleteUsers: boolean;
+  };
 }
 
 const AdminTable: React.FC = () => {
@@ -43,6 +50,14 @@ const AdminTable: React.FC = () => {
   const [adminErr, setAdminErr] = useState<string>("");
   const [adminsDelete, setAdminsDelete] = useState<Admin[]>([]);
   const dispatch = useDispatch<AppDispatch>();
+
+  const formatRightText = (right: string) => {
+    return right
+      .replace(/([A-Z])/g, " $1") // Add space before uppercase letters
+      .replace(/^./, (str) => str.toUpperCase()) // Capitalize the first letter
+      .toLowerCase(); // Convert the rest to lowercase
+  };
+
   const fetchData = async () => {
     try {
       const response = await dispatch(fetchAdmins()).unwrap();
@@ -112,9 +127,9 @@ const AdminTable: React.FC = () => {
     if (adminsDelete.length > 0) {
       adminsDelete.forEach((admin) => {
         const deleteParams: DeleteAdminParams = {
-          adminId: admin._id || "",  // Pass the correct structure here
+          adminId: admin._id || "", // Pass the correct structure here
         };
-  
+
         dispatch(deleteAdmin(deleteParams))
           .unwrap()
           .then((response) => {
@@ -131,11 +146,36 @@ const AdminTable: React.FC = () => {
           });
       });
     }
-  
+
     setDeleteModalOpen(false); // Close the delete confirmation modal
   };
 
   // Check if any admin is selected for deletion
+  const handleToggleRights = async (
+    adminId: string,
+    right: keyof Admin["rights"],
+    currentValue: boolean
+  ) => {
+    try {
+      const updatedRights = { [right]: !currentValue };
+
+      const response = await dispatch(
+        updateAdminRights({ adminId, rights: updatedRights })
+      ).unwrap();
+
+      if (response?.success) {
+        setAdmins((prevAdmins) =>
+          prevAdmins.map((admin) =>
+            admin._id === adminId
+              ? { ...admin, rights: { ...admin.rights, ...updatedRights } }
+              : admin
+          )
+        );
+      }
+    } catch (error) {
+      console.error("Error updating rights:", error);
+    }
+  };
 
   return (
     <div style={{ padding: "24px" }}>
@@ -168,6 +208,34 @@ const AdminTable: React.FC = () => {
                   <TableCell>{admin.lastName}</TableCell>
                   <TableCell>{admin.phoneNumber}</TableCell>
                   <TableCell>{admin.superAdmin ? "Yes" : "No"}</TableCell>{" "}
+                  <TableCell>
+                    {!admin.superAdmin ? (
+                      <div>
+                        {Object.entries(admin.rights).map(([right, value]) => (
+                          <div
+                            key={right}
+                            style={{ display: "flex", alignItems: "center" }}
+                          >
+                            <span>{formatRightText(right)}</span>
+                            <Switch
+                              checked={value}
+                              onChange={() =>
+                                admin._id &&
+                                handleToggleRights(
+                                  admin._id, // Ensure admin._id is a valid string
+                                  right as keyof Admin["rights"],
+                                  value
+                                )
+                              }
+                              color="primary"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span>N/A</span>
+                    )}
+                  </TableCell>
                   <Button
                     variant="contained"
                     color="secondary"

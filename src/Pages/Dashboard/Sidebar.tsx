@@ -22,14 +22,47 @@ import {
   CreditCard,
 } from "@mui/icons-material"; // Import CarRental for rides
 import { Link, useLocation, useNavigate } from "react-router-dom"; // Import useLocation to track current route
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../../Redux/Store";
+import { fetchAdminByID } from "../../Redux/Dashboard/Dashboard";
 
-type User = {
-  id?: string;
-  firstName?: string;
-  lastName?: string;
-  phoneNumber?: string;
-  superAdmin?: boolean;
-};
+interface User {
+  _id: string;
+  adminId: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  password: string;
+  superAdmin: boolean;
+  markedForDelete: boolean;
+  rights: {
+    viewAllUsers: boolean;
+    updateAllUsers: boolean;
+    viewWithdrawalEarnings: boolean;
+    updateWithdrawalEarnings: boolean;
+    viewReferralEarnings: boolean;
+    viewPadimanEarnings: boolean;
+  };
+  hasFullAccess?: boolean; // Virtual field to indicate full access (superAdmin)
+}
+// interface Admin {
+//   _id: string;
+//   adminId: string;
+//   firstName: string;
+//   lastName: string;
+//   phoneNumber: string;
+//   password: string;
+//   superAdmin: boolean;
+//   markedForDelete: boolean;
+//   rights: {
+//     viewAllUsers: boolean;
+//     updateAllUsers: boolean;
+//     viewWithdrawalEarnings: boolean;
+//     updateWithdrawalEarnings: boolean;
+//     viewReferralEarnings: boolean;
+//     viewPadimanEarnings: boolean;
+//   };
+// }
 
 const Sidebar: React.FC = () => {
   const theme = useTheme();
@@ -37,8 +70,38 @@ const Sidebar: React.FC = () => {
   const navigate = useNavigate(); // For redirection
   const [openLogoutModal, setOpenLogoutModal] = useState(false);
   const [user, setUser] = useState<User | null>(null); // Correct type and initialization
+  const [admins, setAdmins] = useState<any>(null); // Correct type and initialization
+
+  const dispatch = useDispatch<AppDispatch>();
 
   const isActive = (path: string) => location.pathname === path;
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const storedUser = localStorage.getItem("user");
+
+        try {
+          const parsedUser: User = JSON.parse(storedUser || "");
+          //setUser(parsedUser);
+          console.log("User object from localStorage:", parsedUser);
+
+          const response = await dispatch(
+            fetchAdminByID(parsedUser._id)
+          ).unwrap();
+          console.log(response, "Admin data loaded successfully");
+          setUser(response);
+          setAdmins(response); // Assuming response.data contains the admin data
+          console.log(response.data, "Admin data loaded successfully");
+        } catch (error) {
+          console.error("Failed to parse user data from localStorage:", error);
+        }
+      } catch (err) {
+        console.error("Error fetching admin data:", err);
+      }
+    };
+    fetchData();
+  }, [dispatch]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -47,18 +110,7 @@ const Sidebar: React.FC = () => {
     navigate("/"); // Redirect
   };
 
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        const parsedUser: User = JSON.parse(storedUser);
-        setUser(parsedUser);
-        console.log("User object from localStorage:", parsedUser);
-      } catch (error) {
-        console.error("Failed to parse user data from localStorage:", error);
-      }
-    }
-  }, []);
+  console.log(admins, user, "Admin data loaded");
 
   return (
     <List>
@@ -95,7 +147,7 @@ const Sidebar: React.FC = () => {
       </ListItemButton>
       {/* Users Item */}
 
-      {user?.superAdmin && (
+      {admins?.rights?.viewAllUsers === true && (
         <ListItemButton
           component={Link}
           to="/users"
@@ -274,7 +326,7 @@ const Sidebar: React.FC = () => {
         <ListItemText primary="Posts" />
       </ListItemButton>
 
-      {user?.superAdmin && (
+      {admins?.superAdmin === true && (
         <>
           <ListItemButton
             component={Link}
@@ -305,65 +357,6 @@ const Sidebar: React.FC = () => {
             </ListItemIcon>
             <ListItemText primary="Admins" />
           </ListItemButton>
-
-          <ListItemButton
-            component={Link}
-            to="/request-withdrawals"
-            sx={{
-              backgroundColor: isActive("/request-withdrawals")
-                ? theme.palette.primary.main + "1A"
-                : "transparent",
-              color: isActive("/request-withdrawals")
-                ? theme.palette.primary.main
-                : "inherit",
-              "&:hover": {
-                backgroundColor: isActive("/request-withdrawals")
-                  ? theme.palette.primary.main + "1A"
-                  : "transparent",
-              },
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
-              <CreditCard
-                sx={{
-                  fontSize: 20,
-                  color: isActive("/request-withdrawals")
-                    ? theme.palette.primary.main
-                    : "inherit",
-                }}
-              />
-            </ListItemIcon>
-            <ListItemText primary="Withdrawal Requests" />
-          </ListItemButton>
-          <ListItemButton
-            component={Link}
-            to="/admin-earnings"
-            sx={{
-              backgroundColor: isActive("/admin-earnings")
-                ? theme.palette.primary.main + "1A"
-                : "transparent",
-              color: isActive("/admin-earnings")
-                ? theme.palette.primary.main
-                : "inherit",
-              "&:hover": {
-                backgroundColor: isActive("/admin-earnings")
-                  ? theme.palette.primary.main + "1A"
-                  : "transparent",
-              },
-            }}
-          >
-            <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
-              <CreditCard
-                sx={{
-                  fontSize: 20,
-                  color: isActive("/admin-earnings")
-                    ? theme.palette.primary.main
-                    : "inherit",
-                }}
-              />
-            </ListItemIcon>
-            <ListItemText primary="Padiman Route Earnings" />
-          </ListItemButton>
           <ListItemButton
             component={Link}
             to="/drivers-requests"
@@ -393,7 +386,79 @@ const Sidebar: React.FC = () => {
             </ListItemIcon>
             <ListItemText primary="Drivers Requests" />
           </ListItemButton>
+        </>
+      )}
 
+      {admins?.rights?.viewWithdrawalEarnings === true && (
+        <>
+          <ListItemButton
+            component={Link}
+            to="/request-withdrawals"
+            sx={{
+              backgroundColor: isActive("/request-withdrawals")
+                ? theme.palette.primary.main + "1A"
+                : "transparent",
+              color: isActive("/request-withdrawals")
+                ? theme.palette.primary.main
+                : "inherit",
+              "&:hover": {
+                backgroundColor: isActive("/request-withdrawals")
+                  ? theme.palette.primary.main + "1A"
+                  : "transparent",
+              },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
+              <CreditCard
+                sx={{
+                  fontSize: 20,
+                  color: isActive("/request-withdrawals")
+                    ? theme.palette.primary.main
+                    : "inherit",
+                }}
+              />
+            </ListItemIcon>
+            <ListItemText primary="Withdrawal Requests" />
+          </ListItemButton>
+        </>
+      )}
+
+      {admins?.rights?.viewPadimanEarnings === true && (
+        <>
+          <ListItemButton
+            component={Link}
+            to="/admin-earnings"
+            sx={{
+              backgroundColor: isActive("/admin-earnings")
+                ? theme.palette.primary.main + "1A"
+                : "transparent",
+              color: isActive("/admin-earnings")
+                ? theme.palette.primary.main
+                : "inherit",
+              "&:hover": {
+                backgroundColor: isActive("/admin-earnings")
+                  ? theme.palette.primary.main + "1A"
+                  : "transparent",
+              },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: 0, mr: 2 }}>
+              <CreditCard
+                sx={{
+                  fontSize: 20,
+                  color: isActive("/admin-earnings")
+                    ? theme.palette.primary.main
+                    : "inherit",
+                }}
+              />
+            </ListItemIcon>
+            <ListItemText primary="Padiman Route Earnings" />
+          </ListItemButton>
+        </>
+      )}
+
+      {admins?.rights?.viewReferralEarnings === true && (
+        <>
           <ListItemButton
             component={Link}
             to="/ref-earnings"

@@ -534,7 +534,71 @@ export const updateRideStatus = createAsyncThunk(
   }
 );
 
+export const updateAdminRights = createAsyncThunk(
+  "data/updateAdminRights",
+  async (
+    { adminId, rights }: { adminId: string; rights: { [key: string]: boolean } },
+    { rejectWithValue }
+  ) => {
+    try {
+      const token = getAccessToken();
 
+      // Make the PUT request
+      const response = await axios.put(
+        `${API_BASE_URL}/dashboard/update-rights/admin/${adminId}`,
+        { rights },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Return the response data
+      return response.data;
+    } catch (error: any) {
+      console.error("Error updating rights:", error);
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
+
+
+export const fetchAdminByID = createAsyncThunk(
+  "data/fetchAdminByID",
+  async (id: string) => {
+    try {
+      // Get the token for authorization
+      const token = getAccessToken();
+
+      console.log(id, 'ididididid')
+      // Make the PUT request to update the withdrawal
+      const response = await axios.get(
+        `${API_BASE_URL}/dashboard/fetch/admins/admin/${id}`, // Send the withdrawal ID in the URL
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      // Log the response for debugging (can be removed in production)
+      console.log("adminssss", response.data);
+
+      // Return the response data
+      return response.data;
+    } catch (error: any) {
+      // Log the error for debugging (can be removed in production)
+      console.log("adminssss", error);
+
+      // Return the error using rejectWithValue to capture and handle in the reducers
+      return error
+    }
+  }
+);
+
+
+//updateAdminRights
 // Slice to manage the data
 const dataSlice = createSlice({
   name: 'data',
@@ -741,6 +805,20 @@ const dataSlice = createSlice({
         state.error = action.payload as string;
       })
 
+
+      // delete Post Parcels
+      .addCase(fetchAdminByID.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchAdminByID.fulfilled, (state, action) => {
+        state.loading = false;
+        state.posts = action.payload.data;
+      })
+      .addCase(fetchAdminByID.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
       // delete Post Parcels
       .addCase(deletePost.pending, (state) => {
         state.loading = true;
@@ -763,6 +841,19 @@ const dataSlice = createSlice({
         state.admins = action.payload.data;
       })
       .addCase(createAdmin.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      })
+
+      // Create Post Parcels
+      .addCase(updateAdminRights.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(updateAdminRights.fulfilled, (state, action) => {
+        state.loading = false;
+        state.admins = action.payload.data;
+      })
+      .addCase(updateAdminRights.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
