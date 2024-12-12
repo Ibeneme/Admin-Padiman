@@ -104,11 +104,12 @@ const Sidebar: React.FC = () => {
   }, [dispatch]);
 
   const handleLogout = () => {
-    localStorage.clear();
+    localStorage.clear(); // Clear user data
     setUser(null); // Reset user state
-    setOpenLogoutModal(false);
-    navigate("/"); // Redirect
-  };
+    setOpenLogoutModal(false); // Close the modal
+    navigate("/"); // Redirect to the homepage
+    window.location.reload(); // Ensure a full reload, if needed
+};
 
   console.log(admins, user, "Admin data loaded");
 
