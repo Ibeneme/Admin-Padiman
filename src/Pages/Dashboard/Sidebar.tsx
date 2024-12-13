@@ -27,7 +27,8 @@ import { AppDispatch } from "../../Redux/Store";
 import { fetchAdminByID } from "../../Redux/Dashboard/Dashboard";
 
 interface User {
-  _id: string;
+  id?: string;
+  _id?: string;
   adminId: string;
   firstName: string;
   lastName: string;
@@ -83,15 +84,22 @@ const Sidebar: React.FC = () => {
 
         try {
           const parsedUser: User = JSON.parse(storedUser || "");
-          //setUser(parsedUser);
+          setUser(parsedUser);
           console.log("User object from localStorage:", parsedUser);
+          const userId = parsedUser?._id || parsedUser?.id;
 
-          const response = await dispatch(
-            fetchAdminByID(parsedUser._id)
-          ).unwrap();
-          console.log(response, "Admin data loaded successfully");
-          setUser(response);
+          if (!userId) {
+            console.error("No valid user ID found.");
+            return;
+          }
+
+          const response = await dispatch(fetchAdminByID(userId)).unwrap();
+
+          console.log(response, "Admin data loaded successfullycons");
+
+          setUser(response); // Assuming response contains user data directly
           setAdmins(response); // Assuming response.data contains the admin data
+
           console.log(response.data, "Admin data loaded successfully");
         } catch (error) {
           console.error("Failed to parse user data from localStorage:", error);
@@ -109,9 +117,9 @@ const Sidebar: React.FC = () => {
     setOpenLogoutModal(false); // Close the modal
     navigate("/"); // Redirect to the homepage
     window.location.reload(); // Ensure a full reload, if needed
-};
+  };
 
-  console.log(admins, user, "Admin data loaded");
+  console.log(admins, "user", user,  "Adminss data loaded");
 
   return (
     <List>

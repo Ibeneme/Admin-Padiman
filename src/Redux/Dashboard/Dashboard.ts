@@ -406,7 +406,7 @@ export const createAdmin = createAsyncThunk(
     try {
       const { firstName, lastName, phoneNumber, password } = adminParams;
 
-      const response = await axios.post(`${API_BASE_URL}/dashboard/create-admin`, {
+      const response = await axios.post(`${API_BASE_URL}/admin/create`, {
         firstName,
         lastName,
         phoneNumber,
