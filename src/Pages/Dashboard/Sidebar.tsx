@@ -119,7 +119,7 @@ const Sidebar: React.FC = () => {
     window.location.reload(); // Ensure a full reload, if needed
   };
 
-  console.log(admins, "user", user,  "Adminss data loaded");
+  console.log(admins, "user", user, "Adminss data loaded");
 
   return (
     <List>

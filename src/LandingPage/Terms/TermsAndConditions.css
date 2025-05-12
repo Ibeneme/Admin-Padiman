@@ -1,0 +1,31 @@
+.terms-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 120px 16px;
+    font-family: "Plus Jakarta Sans", sans-serif;
+    color: #333;
+    line-height: 1.7;
+}
+
+.terms-title {
+    color: #8B25BE;
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.terms-container h2 {
+    color: #8B25BE;
+    margin-top: 30px;
+    font-size: 1.4rem;
+}
+
+.terms-container ul {
+    list-style: disc;
+    padding-left: 20px;
+}
+
+.terms-container a.terms-link {
+    color: #8B25BE;
+    text-decoration: underline;
+}

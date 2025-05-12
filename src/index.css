@@ -2,7 +2,8 @@
 @import url("https://fonts.googleapis.com/css2?family=DM+Sans:opsz@9..40&display=swap");
 
 :root {
-  --font-family: "DM Sans", sans-serif; /* Use DM Sans for the font-family */
+  --font-family: "DM Sans", sans-serif;
+  /* Use DM Sans for the font-family */
   --darkOrange: #ff6b00;
   --primaryOrange: #ff7342;
   --darkBlue: #031849;
@@ -15,8 +16,18 @@
   --mainGray: #666666;
 }
 
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Mont', sans-serif;
+  /* font-family: 'Plus Jakarta Sans', sans-serif; */
+}
+
+
 body {
-  font-family: var(--font-family); /* Apply DM Sans globally */
+  font-family: var(--font-family);
+  /* Apply DM Sans globally */
   padding: 0;
   margin: 0;
 }
@@ -35,7 +46,8 @@ button {
   color: #808080;
   font-size: 14px;
   cursor: pointer;
-  font-family: var(--font-family); /* Apply DM Sans to button text */
+  font-family: var(--font-family);
+  /* Apply DM Sans to button text */
 }
 
 /* Styling for the save-reassign button on hover */
@@ -49,5 +61,6 @@ button {
   font-size: 14px;
   cursor: pointer;
   background-color: var(--darkOrange);
-  font-family: var(--font-family); /* Apply DM Sans to button text on hover */
+  font-family: var(--font-family);
+  /* Apply DM Sans to button text on hover */
 }

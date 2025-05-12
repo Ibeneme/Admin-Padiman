@@ -31,6 +31,11 @@ import DriverRequests from "./Pages/Dashboard/DriverRequests";
 import store from "./Redux/Store";
 import { UserProvider } from "./Context/UserContext";
 import BecomeADriver from "./Redux/BecomeDriver/BecomeADriver";
+import Index from "./LandingPage/Index";
+import TermsAndConditions from "./LandingPage/Terms/TermsAndConditions";
+import Footer from "./LandingPage/footer/Footer";
+import PrivacyPolicy from "./LandingPage/Terms/PrivacyPolicy";
+import Navbar from "./LandingPage/NewNav/NewNav";
 
 const theme = createTheme({
   typography: {
@@ -58,14 +63,36 @@ const App: React.FC = () => {
         <ThemeProvider theme={theme}>
           <Router>
             <Routes>
-              {/* Public Routes */}
+              {/* Public Routes  npm cache clean --force */}
+              <Route path="/" element={<Index />} />
               <Route
-                path="/"
+                path="/terms"
+                element={
+                  <>
+                    {" "}
+                    <Navbar />
+                    <TermsAndConditions />
+                    <Footer />
+                  </>
+                }
+              />
+              <Route
+                path="/privacy"
+                element={
+                  <>
+                    <Navbar />
+                    <PrivacyPolicy />
+                    <Footer />
+                  </>
+                }
+              />
+
+              <Route
+                path="/admin"
                 element={
                   isAuthenticated ? <Navigate to="/dashboard" /> : <LoginPage />
                 }
               />
-
               <Route path="/become-driver" element={<BecomeADriver />} />
 
               <Route
